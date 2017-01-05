@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { AddDeleteUpdate, AddForm } from './AddDeleteUpdate.js'
+import { Edits, EditForm } from './Edits.js'
 import './App.css';
 
 
@@ -9,17 +9,18 @@ class MovieList extends Component {
 
     this.state = {
       movies: [],
-      editMode: false
+      editMode: false,
+      currentSelection: null
     };
   }
 
   render() {
-    let addForm;
+    let editForm;
 
     if(this.state.editMode)
-      addForm = <AddForm onSubmit={(title, genre, year, rating) => this.submitForm(title, genre, year, rating)} />;
+      editForm = <EditForm onSubmit={(title, genre, year, rating) => this.submitForm(title, genre, year, rating)} />;
     else
-      addForm = null;
+      editForm = null;
 
     return (
       <div>
@@ -27,8 +28,8 @@ class MovieList extends Component {
         <div className="movie-list">
           {this.renderTable()}
         </div>
-        <AddDeleteUpdate onAdd={() => this.showAddForm()} />
-        {addForm}
+        <Edits onAdd={() => this.showEditForm()} />
+        {editForm}
       </div>
     );
   }
@@ -53,14 +54,15 @@ class MovieList extends Component {
 
   renderBody() {
     return this.state.movies.map(function(movie) {
-      return <tr><td>{movie.title}</td><td>{movie.genre}</td><td>{movie.year}</td><td>{movie.rating}</td></tr>;
+      return <tr key={movie.title} onClick={() => alert("You hit a row!")}><td>{movie.title}</td><td>{movie.genre}</td><td>{movie.year}</td><td>{movie.rating}</td></tr>;
     });
   }
 
-  showAddForm() {
+  showEditForm() {
     this.setState({
       movies: this.state.movies,
-      editMode: true
+      editMode: true,
+      currentSelection: this.state.currentSelection
     });
   }
 
@@ -89,7 +91,8 @@ class MovieList extends Component {
 
     this.setState({
       movies: currentMovies,
-      editMode: false
+      editMode: false,
+      currentSelection: null
     });
   }
 }
