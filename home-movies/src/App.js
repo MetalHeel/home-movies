@@ -1,25 +1,27 @@
 import React, { Component } from 'react';
+import { AddDeleteUpdate, AddForm } from './AddDeleteUpdate.js'
 import './App.css';
 
 
 class MovieList extends Component {
   constructor() {
     super();
+
     this.state = {
-      movies: Array,
-      addMode: false
+      movies: [],
+      editMode: false
     };
   }
 
   render() {
     let addForm;
 
-    if(this.state.addMode)
-      addForm = <AddForm onSubmit={() => this.submitForm()} />;
+    if(this.state.editMode)
+      addForm = <AddForm onSubmit={(title, genre, year, rating) => this.submitForm(title, genre, year, rating)} />;
     else
       addForm = null;
 
-    return  (
+    return (
       <div>
         <h1>My Movies</h1>
         <div className="movie-list">
@@ -34,56 +36,47 @@ class MovieList extends Component {
   renderTable() {
     return (
       <table>
-        <tr>
-          <th>Title</th>
-          <th>Genre</th>
-          <th>Year</th>
-          <th>Rating</th>
-        </tr>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Genre</th>
+            <th>Year</th>
+            <th>Rating</th>
+          </tr>
+        </thead>
+        <tbody>
+          {this.renderBody()}
+        </tbody>
       </table>
     );
   }
 
+  renderBody() {
+    return this.state.movies.map(function(movie) {
+      return <tr><td>{movie.title}</td><td>{movie.genre}</td><td>{movie.year}</td><td>{movie.rating}</td></tr>;
+    });
+  }
+
   showAddForm() {
     this.setState({
-      movies: Array,
-      addMode: true
+      movies: this.state.movies,
+      editMode: true
     });
   }
 
-  submitForm() {
+  submitForm(title, genre, year, rating) {
+    var currentMovies = this.state.movies.slice();
+    currentMovies.push({
+      "title": title,
+      "genre": genre,
+      "year": year,
+      "rating": rating
+    });
+
     this.setState({
-      movies: Array,
-      addMode: false
+      movies: currentMovies,
+      editMode: false
     });
-  }
-}
-
-class AddDeleteUpdate extends Component {
-  render() {
-    return (
-      <div>
-        <button className="Add" onClick={() => this.props.onAdd()}>Add</button>
-        <button className="Delete">Delete</button>
-        <button className="Update">Update</button>
-      </div>
-    );
-  }
-}
-
-class AddForm extends Component {
-  render() {
-    return (
-      <div>
-        <ul>
-          <li>Title: <input type="text" name="title">{this.props.title}</input></li>
-          <li>Genre: <input type="text" name="genre">{this.props.genre}</input></li>
-          <li>Year: <input type="text" name="year">{this.props.year}</input></li>
-          <li>Rating: <input type="number" min="0" step="0.1" name="rating">{this.props.rating}</input></li>
-        </ul>
-        <button className="Submit" onClick={() => this.props.onSubmit()}>Submit</button>
-      </div>
-    );
   }
 }
 
