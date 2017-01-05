@@ -21,3 +21,7 @@ ul {
 li {
   list-style: none;
 }
+
+button {
+  width: 5em;
+}
