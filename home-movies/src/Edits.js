@@ -6,7 +6,7 @@ export class Edits extends Component {
     return (
       <div>
         <button className="Add" onClick={() => this.props.onAdd()}>Add</button>
-        <button className="Delete">Delete</button>
+        <button className="Delete" onClick={() => this.props.onDelete()}>Delete</button>
         <button className="Update">Update</button>
       </div>
     );

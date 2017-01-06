@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Edits, EditForm } from './Edits.js'
+import { Edits, EditForm } from './Edits.js';
 import './App.css';
 
 
@@ -30,7 +30,7 @@ class MovieList extends Component {
         <div className="movie-list">
           {this.renderTable()}
         </div>
-        <Edits onAdd={() => this.showEditForm()} />
+        <Edits onAdd={() => this.showEditForm()} onDelete={() => this.deleteSelection()} />
         {editForm}
       </div>
     );
@@ -56,8 +56,16 @@ class MovieList extends Component {
   }
 
   renderBody() {
+    const rowClickCallback = this.changeSelection;
+    const selection = this.state.currentSelection;
+
     return this.state.movies.map(function(movie) {
-      return <tr key={movie.title} onClick={() => alert("You hit a row!")}><td>{movie.title}</td><td>{movie.genre}</td><td>{movie.year}</td><td>{movie.rating}</td></tr>;
+      const highlight = { backgroundColor: "yellow" };
+
+      if(selection != null && selection.localeCompare(movie.title) === 0)
+        return <tr key={movie.title} onClick={() => rowClickCallback(movie.title)} style={highlight}><td>{movie.title}</td><td>{movie.genre}</td><td>{movie.year}</td><td>{movie.rating}</td></tr>;
+      else
+        return <tr key={movie.title} onClick={() => rowClickCallback(movie.title)}><td>{movie.title}</td><td>{movie.genre}</td><td>{movie.year}</td><td>{movie.rating}</td></tr>;
     });
   }
 
@@ -77,9 +85,41 @@ class MovieList extends Component {
       "year": year,
       "rating": rating
     });
+    currentMovies = this.sortList(currentMovies);
 
-    // Todo: Create sorting functions for each thing and put 'em in a util file.
-    currentMovies.sort(function(a, b) {
+    this.setState({
+      movies: currentMovies,
+      editMode: false,
+      currentSelection: this.state.currentSelection
+    });
+  }
+
+  changeSelection(selection) {
+    this.setState({
+      movies: this.state.movies,
+      editMode: this.state.editMode,
+      currentSelection: selection
+    });
+  }
+
+  deleteSelection() {
+    var _ = require('lodash')
+
+    const selection = this.state.currentSelection;
+
+    var newMovies = _.filter(this.state.movies, function(movie) { return selection === null || selection.localeCompare(movie.title) !== 0 });
+    newMovies = this.sortList(newMovies);
+
+    this.setState({
+      movies: newMovies,
+      editMode: this.state.editMode,
+      currentSelection: this.state.currentSelection
+    });
+  }
+
+  // Todo: Make this a utility with different sorting criteria.
+  sortList(list) {
+    return list.sort(function(a, b) {
       var titleA = a.title.toUpperCase();
       var titleB = b.title.toUpperCase();
 
@@ -90,20 +130,6 @@ class MovieList extends Component {
         return -1;
 
       return 0;
-    });
-
-    this.setState({
-      movies: currentMovies,
-      editMode: false,
-      currentSelection: null
-    });
-  }
-
-  changeSelection(selection) {
-    this.setState({
-      movies: this.state.movies,
-      editMode: this.state.editMode,
-      currentSelection: selection
     });
   }
 }
