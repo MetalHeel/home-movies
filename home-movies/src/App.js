@@ -12,6 +12,8 @@ class MovieList extends Component {
       editMode: false,
       currentSelection: null
     };
+
+    this.changeSelection = this.changeSelection.bind(this);
   }
 
   render() {
@@ -34,6 +36,7 @@ class MovieList extends Component {
     );
   }
 
+  // Todo: Make scrollable.
   renderTable() {
     return (
       <table>
@@ -93,6 +96,14 @@ class MovieList extends Component {
       movies: currentMovies,
       editMode: false,
       currentSelection: null
+    });
+  }
+
+  changeSelection(selection) {
+    this.setState({
+      movies: this.state.movies,
+      editMode: this.state.editMode,
+      currentSelection: selection
     });
   }
 }
