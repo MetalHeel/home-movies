@@ -8,6 +8,10 @@ export class Edits extends Component {
         <button className="Add" onClick={() => this.props.onAdd()}>Add</button>
         <button className="Delete" onClick={() => this.props.onDelete()}>Delete</button>
         <button className="Update" onClick={() => this.props.onUpdate()}>Update</button>
+        <div className="SearchBar">
+          <input type="text" />
+          <button onClick={() => this.props.onUpdate()}>Search</button>
+        </div>
       </div>
     );
   }

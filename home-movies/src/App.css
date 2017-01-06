@@ -30,3 +30,7 @@ li {
 button {
   width: 5em;
 }
+
+div.SearchBar {
+  float: right;
+}
