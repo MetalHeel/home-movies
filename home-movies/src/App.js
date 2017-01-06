@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Edits, EditForm } from './Edits.js';
+import {Storage } from './Storage.js';
 import './App.css';
 
 
@@ -7,8 +8,13 @@ class MovieList extends Component {
   constructor() {
     super();
 
+    this.storage = new Storage();
+
+    var storedMovies = this.storage.getMovies();
+    storedMovies = this.sortList(storedMovies);
+
     this.state = {
-      movies: [],
+      movies: storedMovies,
       editMode: false,
       currentSelection: null
     };
@@ -104,13 +110,15 @@ class MovieList extends Component {
   }
 
   addNewMovie(title, genre, year, rating) {
-    var currentMovies = this.state.movies.slice();
-    currentMovies.push({
+    var newMovie = {
       "title": title,
       "genre": genre,
       "year": year,
       "rating": rating
-    });
+    };
+
+    var currentMovies = this.state.movies.slice();
+    currentMovies.push(newMovie);
     currentMovies = this.sortList(currentMovies);
 
     this.setState({
@@ -118,20 +126,25 @@ class MovieList extends Component {
       editMode: false,
       currentSelection: this.state.currentSelection
     });
+
+    this.storage.addMovie(newMovie);
   }
 
   updateMovie(title, genre, year, rating) {
-    var _ = require('lodash')
+    var _ = require('lodash');
 
     const selection = this.state.currentSelection;
 
-    var newMovies = _.filter(this.state.movies, function(movie) { return selection === null || selection.title.localeCompare(movie.title) !== 0 });
-    newMovies.push({
+    var oldMovie = selection;
+    var newMovie = {
       "title": title,
       "genre": genre,
       "year": year,
       "rating": rating
-    });
+    };
+
+    var newMovies = _.filter(this.state.movies, function(movie) { return selection === null || selection.title.localeCompare(movie.title) !== 0 });
+    newMovies.push(newMovie);
     newMovies = this.sortList(newMovies);
 
     this.setState({
@@ -139,6 +152,8 @@ class MovieList extends Component {
       editMode: false,
       currentSelection: null
     });
+
+    this.storage.updateMovie(oldMovie, newMovie);
   }
 
   changeSelection(selection) {
@@ -153,7 +168,7 @@ class MovieList extends Component {
   }
 
   deleteSelection() {
-    var _ = require('lodash')
+    var _ = require('lodash');
 
     const selection = this.state.currentSelection;
 
@@ -165,6 +180,8 @@ class MovieList extends Component {
       editMode: this.state.editMode,
       currentSelection: null
     });
+
+    this.storage.deleteMovie(selection);
   }
 
   // Todo: Make this a utility with different sorting criteria.
