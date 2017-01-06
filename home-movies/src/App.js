@@ -17,12 +17,15 @@ class MovieList extends Component {
   }
 
   render() {
-    let editForm;
+    var editForm = null;
 
     if(this.state.editMode)
-      editForm = <EditForm onSubmit={(title, genre, year, rating) => this.submitForm(title, genre, year, rating)} />;
-    else
-      editForm = null;
+    {
+      editForm = <EditForm
+        initialEntries={this.state.currentSelection}
+        onSubmit={(title, genre, year, rating) => this.submitForm(title, genre, year, rating)}
+        onCancel={() => this.cancelEdit()} />;
+    }
 
     return (
       <div>
@@ -30,7 +33,7 @@ class MovieList extends Component {
         <div className="movie-list">
           {this.renderTable()}
         </div>
-        <Edits onAdd={() => this.showEditForm()} onDelete={() => this.deleteSelection()} />
+        <Edits onAdd={() => this.showAddForm()} onDelete={() => this.deleteSelection()} onUpdate={() => this.showEditForm()} />
         {editForm}
       </div>
     );
@@ -59,13 +62,21 @@ class MovieList extends Component {
     const rowClickCallback = this.changeSelection;
     const selection = this.state.currentSelection;
 
-    return this.state.movies.map(function(movie) {
+    return this.state.movies.map(function(movie, index) {
       const highlight = { backgroundColor: "yellow" };
 
-      if(selection != null && selection.localeCompare(movie.title) === 0)
-        return <tr key={movie.title} onClick={() => rowClickCallback(movie.title)} style={highlight}><td>{movie.title}</td><td>{movie.genre}</td><td>{movie.year}</td><td>{movie.rating}</td></tr>;
+      if(selection != null && selection.title.localeCompare(movie.title) === 0)
+        return <tr key={movie.title} onClick={() => rowClickCallback(movie)} style={highlight}><td>{movie.title}</td><td>{movie.genre}</td><td>{movie.year}</td><td>{movie.rating}</td></tr>;
       else
-        return <tr key={movie.title} onClick={() => rowClickCallback(movie.title)}><td>{movie.title}</td><td>{movie.genre}</td><td>{movie.year}</td><td>{movie.rating}</td></tr>;
+        return <tr key={movie.title} onClick={() => rowClickCallback(movie)}><td>{movie.title}</td><td>{movie.genre}</td><td>{movie.year}</td><td>{movie.rating}</td></tr>;
+    });
+  }
+
+  showAddForm() {
+    this.setState({
+      movies: this.state.movies,
+      editMode: true,
+      currentSelection: null
     });
   }
 
@@ -78,6 +89,21 @@ class MovieList extends Component {
   }
 
   submitForm(title, genre, year, rating) {
+    if(this.state.currentSelection === null)
+      this.addNewMovie(title, genre, year, rating);
+    else
+      this.updateMovie(title, genre, year, rating);
+  }
+
+  cancelEdit() {
+    this.setState({
+      movies: this.state.movies,
+      editMode: false,
+      currentSelection: this.state.currentSelection
+    });
+  }
+
+  addNewMovie(title, genre, year, rating) {
     var currentMovies = this.state.movies.slice();
     currentMovies.push({
       "title": title,
@@ -94,12 +120,36 @@ class MovieList extends Component {
     });
   }
 
-  changeSelection(selection) {
-    this.setState({
-      movies: this.state.movies,
-      editMode: this.state.editMode,
-      currentSelection: selection
+  updateMovie(title, genre, year, rating) {
+    var _ = require('lodash')
+
+    const selection = this.state.currentSelection;
+
+    var newMovies = _.filter(this.state.movies, function(movie) { return selection === null || selection.title.localeCompare(movie.title) !== 0 });
+    newMovies.push({
+      "title": title,
+      "genre": genre,
+      "year": year,
+      "rating": rating
     });
+    newMovies = this.sortList(newMovies);
+
+    this.setState({
+      movies: newMovies,
+      editMode: false,
+      currentSelection: null
+    });
+  }
+
+  changeSelection(selection) {
+    if(!this.state.editMode)
+    {
+      this.setState({
+        movies: this.state.movies,
+        editMode: this.state.editMode,
+        currentSelection: selection
+      });
+    }
   }
 
   deleteSelection() {
@@ -107,13 +157,13 @@ class MovieList extends Component {
 
     const selection = this.state.currentSelection;
 
-    var newMovies = _.filter(this.state.movies, function(movie) { return selection === null || selection.localeCompare(movie.title) !== 0 });
+    var newMovies = _.filter(this.state.movies, function(movie) { return selection === null || selection.title.localeCompare(movie.title) !== 0 });
     newMovies = this.sortList(newMovies);
 
     this.setState({
       movies: newMovies,
       editMode: this.state.editMode,
-      currentSelection: this.state.currentSelection
+      currentSelection: null
     });
   }
 
