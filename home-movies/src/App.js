@@ -48,7 +48,7 @@ class MovieList extends Component {
   // Todo: Make scrollable.
   renderTable() {
     return (
-      <table>
+      <table class="table-section">
         <thead>
           <tr>
             <th>Title</th>

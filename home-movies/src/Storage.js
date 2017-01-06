@@ -40,7 +40,7 @@ export class Storage {
 		if(item === null || item.length === 0)
 		{
 			possibleMovies = [];
-			localStorage.setItem('my-movies', []);
+			localStorage.setItem('my-movies', "");
 		}
 		else
 			possibleMovies = JSON.parse(item);

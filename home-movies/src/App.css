@@ -13,6 +13,11 @@ td, th {
   padding: 8px;
 }
 
+tbody {
+  overflow: auto;
+  height: 150px;
+}
+
 ul {
   width: 25em;
   list-style: none;
