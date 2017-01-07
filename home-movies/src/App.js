@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 
 import { Edits, EditForm } from './Edits.js';
-import { MovieList } from './MovieList';
+import { MovieList } from './MovieList.js';
+import { View } from './View.js';
 import { Storage } from './Storage.js';
 import { SortMaster } from './SortMaster.js';
 
@@ -36,6 +37,7 @@ class App extends Component {
 
   render() {
     var editForm = null;
+    var viewForm = null;
 
     if(this.state.mode === this.Modes.UPDATE || this.state.mode === this.Modes.ADD)
     {
@@ -43,6 +45,12 @@ class App extends Component {
         initialEntries={this.state.currentSelection}
         onSubmit={(title, genre, year, rating) => this.submitForm(title, genre, year, rating)}
         onCancel={() => this.cancelEdit()} />;
+    }
+
+    if(this.state.mode === this.Modes.VIEW)
+    {
+      alert(this.state.currentSelection.title);
+      viewForm = <View movie={this.state.currentSelection}/>
     }
 
     return (
@@ -54,9 +62,11 @@ class App extends Component {
         <Edits onAdd={() => this.showAddForm()}
           onDelete={() => this.deleteSelection()}
           onUpdate={() => this.showEditForm()}
+          onView={() => this.showMovieInfo()}
           onSearch={(query) => this.searchList(query)}
           onReset={() => this.loadAll()} />
         {editForm}
+        {viewForm}
       </div>
     );
   }
@@ -111,6 +121,15 @@ class App extends Component {
     });
 
     this.storage.deleteMovie(selection);
+  }
+
+  showMovieInfo() {
+    this.setState({
+      allMovies: this.state.allMovies,
+      currentMovies: this.state.currentMovies,
+      mode: this.Modes.VIEW,
+      currentSelection: this.state.currentSelection
+    });
   }
 
   // Todo: This will need to be expanded for artists.
