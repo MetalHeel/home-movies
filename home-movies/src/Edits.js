@@ -2,6 +2,16 @@ import React, { Component } from 'react';
 
 
 export class Edits extends Component {
+  constructor() {
+    super();
+
+    this.state = {
+      searchQuery: null
+    };
+
+    this.handleSearchChange = this.handleSearchChange.bind(this);
+  }
+
   render() {
     return (
       <div>
@@ -9,11 +19,17 @@ export class Edits extends Component {
         <button className="Delete" onClick={() => this.props.onDelete()}>Delete</button>
         <button className="Update" onClick={() => this.props.onUpdate()}>Update</button>
         <div className="SearchBar">
-          <input type="text" />
-          <button onClick={() => this.props.onUpdate()}>Search</button>
+          <input type="text" onChange={this.handleSearchChange} />
+          <button onClick={() => this.props.onSearch(this.state.searchQuery)}>Search</button>
         </div>
       </div>
     );
+  }
+
+  handleSearchChange(e) {
+    this.state = {
+      searchQuery: e.target.value
+    };
   }
 }
 

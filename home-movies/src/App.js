@@ -1,9 +1,12 @@
 import React, { Component } from 'react';
 import { Edits, EditForm } from './Edits.js';
-import {Storage } from './Storage.js';
+import { Storage } from './Storage.js';
 import './App.css';
 
 
+// Todo: Make a parent "App" component to pull some of this stuff out of here.
+// Todo: Add actors.
+// Todo: Add some sort of "view" functionality.
 class MovieList extends Component {
   constructor() {
     super();
@@ -39,7 +42,10 @@ class MovieList extends Component {
         <div className="movie-list">
           {this.renderTable()}
         </div>
-        <Edits onAdd={() => this.showAddForm()} onDelete={() => this.deleteSelection()} onUpdate={() => this.showEditForm()} />
+        <Edits onAdd={() => this.showAddForm()}
+          onDelete={() => this.deleteSelection()}
+          onUpdate={() => this.showEditForm()}
+          onSearch={(query) => this.searchList(query)} />
         {editForm}
       </div>
     );
@@ -48,7 +54,7 @@ class MovieList extends Component {
   // Todo: Make scrollable.
   renderTable() {
     return (
-      <table class="table-section">
+      <table>
         <thead>
           <tr>
             <th>Title</th>
@@ -197,6 +203,28 @@ class MovieList extends Component {
         return -1;
 
       return 0;
+    });
+  }
+
+  // Todo: This will need to be expanded for artists.
+  searchList(query) {
+    var _ = require('lodash');
+
+    var generalQuery = query.toUpperCase();
+
+    var hits = _.filter(this.state.movies, function(movie) {
+      return _.some(movie, function(value) {
+        if(value.toUpperCase().indexOf(generalQuery) !== -1)
+          return true;
+
+        return false;
+      });
+    });
+
+    this.setState({
+      movies: hits,
+      editMode: this.state.editMode,
+      currentSelection: null
     });
   }
 }
