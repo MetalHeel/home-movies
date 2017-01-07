@@ -1,34 +1,43 @@
 import React, { Component } from 'react';
+
 import { Edits, EditForm } from './Edits.js';
+import { MovieList } from './MovieList';
 import { Storage } from './Storage.js';
+import { SortMaster } from './SortMaster.js';
+
 import './App.css';
 
 
-// Todo: Make a parent "App" component to pull some of this stuff out of here.
-// Todo: Add actors.
-// Todo: Add some sort of "view" functionality.
-class MovieList extends Component {
+class App extends Component {
   constructor() {
     super();
 
-    this.storage = new Storage();
-
-    var storedMovies = this.storage.getMovies();
-    storedMovies = this.sortList(storedMovies);
-
-    this.state = {
-      movies: storedMovies,
-      editMode: false,
-      currentSelection: null
+    this.Modes = {
+      STANDARD: 0,
+      ADD: 1,
+      UPDATE: 2,
+      VIEW: 3
     };
 
-    this.changeSelection = this.changeSelection.bind(this);
+    this.storage = new Storage();
+    this.sortMaster = new SortMaster()
+
+    // Todo: Sort by clicked header.
+    var storedMovies = this.storage.getMovies();
+    storedMovies = this.sortMaster.sortByTitle(storedMovies);
+
+    this.state = {
+      allMovies: storedMovies,
+      currentMovies: storedMovies,
+      mode: this.Modes.STANDARD,
+      currentSelection: null
+    };
   }
 
   render() {
     var editForm = null;
 
-    if(this.state.editMode)
+    if(this.state.mode === this.Modes.UPDATE || this.state.mode === this.Modes.ADD)
     {
       editForm = <EditForm
         initialEntries={this.state.currentSelection}
@@ -39,9 +48,9 @@ class MovieList extends Component {
     return (
       <div>
         <h1>My Movies</h1>
-        <div className="movie-list">
-          {this.renderTable()}
-        </div>
+        <MovieList movies={this.state.currentMovies}
+          selection={this.state.currentSelection}
+          rowClickCallback={(selection) => this.changeSelection(selection)} />
         <Edits onAdd={() => this.showAddForm()}
           onDelete={() => this.deleteSelection()}
           onUpdate={() => this.showEditForm()}
@@ -52,51 +61,29 @@ class MovieList extends Component {
     );
   }
 
-  // Todo: Make scrollable.
-  renderTable() {
-    return (
-      <table>
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Genre</th>
-            <th>Year</th>
-            <th>Rating</th>
-          </tr>
-        </thead>
-        <tbody>
-          {this.renderBody()}
-        </tbody>
-      </table>
-    );
-  }
-
-  renderBody() {
-    const rowClickCallback = this.changeSelection;
-    const selection = this.state.currentSelection;
-
-    return this.state.movies.map(function(movie, index) {
-      const highlight = { backgroundColor: "yellow" };
-
-      if(selection != null && selection.title.localeCompare(movie.title) === 0)
-        return <tr key={movie.title} onClick={() => rowClickCallback(movie)} style={highlight}><td>{movie.title}</td><td>{movie.genre}</td><td>{movie.year}</td><td>{movie.rating}</td></tr>;
-      else
-        return <tr key={movie.title} onClick={() => rowClickCallback(movie)}><td>{movie.title}</td><td>{movie.genre}</td><td>{movie.year}</td><td>{movie.rating}</td></tr>;
-    });
-  }
-
   showAddForm() {
     this.setState({
-      movies: this.state.movies,
-      editMode: true,
+      allMovies: this.state.allMovies,
+      currentMovies: this.state.currentMovies,
+      mode: this.Modes.ADD,
       currentSelection: null
     });
   }
 
   showEditForm() {
     this.setState({
-      movies: this.state.movies,
-      editMode: true,
+      allMovies: this.state.allMovies,
+      currentMovies: this.state.currentMovies,
+      mode: this.Modes.UPDATE,
+      currentSelection: this.state.currentSelection
+    });
+  }
+
+  cancelEdit() {
+    this.setState({
+      allMovies: this.state.allMovies,
+      currentMovies: this.state.currentMovies,
+      mode: this.Modes.STANDARD,
       currentSelection: this.state.currentSelection
     });
   }
@@ -108,11 +95,56 @@ class MovieList extends Component {
       this.updateMovie(title, genre, year, rating);
   }
 
-  cancelEdit() {
+  deleteSelection() {
+    var _ = require('lodash');
+
+    const selection = this.state.currentSelection;
+
+    var newMovies = _.filter(this.state.allMovies, function(movie) { return selection === null || selection.title.localeCompare(movie.title) !== 0 });
+    newMovies = this.sortMaster.sortByTitle(newMovies);
+
     this.setState({
-      movies: this.state.movies,
-      editMode: false,
-      currentSelection: this.state.currentSelection
+      allMovies: newMovies,
+      currentMovies: newMovies,
+      mode: this.state.mode,
+      currentSelection: null
+    });
+
+    this.storage.deleteMovie(selection);
+  }
+
+  // Todo: This will need to be expanded for artists.
+  searchList(query) {
+    var _ = require('lodash');
+
+    var generalQuery = query.toUpperCase();
+
+    var hits = _.filter(this.state.allMovies, function(movie) {
+      return _.some(movie, function(value) {
+        if(value.toUpperCase().indexOf(generalQuery) !== -1)
+          return true;
+
+        return false;
+      });
+    });
+
+    this.setState({
+      allMovies: this.state.allMovies,
+      currentMovies: hits,
+      mode: this.state.mode,
+      currentSelection: null
+    });
+  }
+
+  loadAll() {
+    var storedMovies = this.storage.getMovies();
+    storedMovies = this.sortMaster.sortByTitle(storedMovies);
+
+    this.setState({
+      allMovies: storedMovies,
+      currentMovies: storedMovies,
+      mode: this.Modes.STANDARD,
+      currentSelection: null
     });
   }
 
@@ -124,13 +156,14 @@ class MovieList extends Component {
       "rating": rating
     };
 
-    var currentMovies = this.state.movies.slice();
-    currentMovies.push(newMovie);
-    currentMovies = this.sortList(currentMovies);
+    var newMovies = this.state.allMovies.slice();
+    newMovies.push(newMovie);
+    newMovies = this.sortMaster.sortByTitle(newMovies);
 
     this.setState({
-      movies: currentMovies,
-      editMode: false,
+      allMovies: newMovies,
+      currentMovies: newMovies,
+      mode: this.Modes.STANDARD,
       currentSelection: this.state.currentSelection
     });
 
@@ -150,13 +183,14 @@ class MovieList extends Component {
       "rating": rating
     };
 
-    var newMovies = _.filter(this.state.movies, function(movie) { return selection === null || selection.title.localeCompare(movie.title) !== 0 });
+    var newMovies = _.filter(this.state.allMovies, function(movie) { return selection === null || selection.title.localeCompare(movie.title) !== 0 });
     newMovies.push(newMovie);
-    newMovies = this.sortList(newMovies);
+    newMovies = this.sortMaster.sortByTitle(newMovies);
 
     this.setState({
-      movies: newMovies,
-      editMode: false,
+      allMovies: newMovies,
+      currentMovies: newMovies,
+      mode: this.Modes.STANDARD,
       currentSelection: null
     });
 
@@ -164,82 +198,16 @@ class MovieList extends Component {
   }
 
   changeSelection(selection) {
-    if(!this.state.editMode)
+    if(this.state.mode === this.Modes.STANDARD || this.state.mode === this.Modes.VIEW)
     {
       this.setState({
-        movies: this.state.movies,
-        editMode: this.state.editMode,
+        allMovies: this.state.allMovies,
+        mode: this.state.mode,
         currentSelection: selection
       });
     }
   }
-
-  deleteSelection() {
-    var _ = require('lodash');
-
-    const selection = this.state.currentSelection;
-
-    var newMovies = _.filter(this.state.movies, function(movie) { return selection === null || selection.title.localeCompare(movie.title) !== 0 });
-    newMovies = this.sortList(newMovies);
-
-    this.setState({
-      movies: newMovies,
-      editMode: this.state.editMode,
-      currentSelection: null
-    });
-
-    this.storage.deleteMovie(selection);
-  }
-
-  // Todo: Make this a utility with different sorting criteria.
-  sortList(list) {
-    return list.sort(function(a, b) {
-      var titleA = a.title.toUpperCase();
-      var titleB = b.title.toUpperCase();
-
-      if(titleA > titleB)
-        return 1;
-
-      if(titleA < titleB)
-        return -1;
-
-      return 0;
-    });
-  }
-
-  // Todo: This will need to be expanded for artists.
-  searchList(query) {
-    var _ = require('lodash');
-
-    var generalQuery = query.toUpperCase();
-
-    var hits = _.filter(this.state.movies, function(movie) {
-      return _.some(movie, function(value) {
-        if(value.toUpperCase().indexOf(generalQuery) !== -1)
-          return true;
-
-        return false;
-      });
-    });
-
-    this.setState({
-      movies: hits,
-      editMode: this.state.editMode,
-      currentSelection: null
-    });
-  }
-
-  loadAll() {
-    var storedMovies = this.storage.getMovies();
-    storedMovies = this.sortList(storedMovies);
-
-    this.setState({
-      movies: storedMovies,
-      editMode: false,
-      currentSelection: null
-    });
-  }
 }
 
 
-export default MovieList;
+export default App;

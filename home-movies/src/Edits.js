@@ -92,7 +92,7 @@ export class EditForm extends Component {
       oldState.genre = genre;
     if(oldState.year === null)
       oldState.year = year;
-    if(oldState.rating === rating)
+    if(oldState.rating === null)
       oldState.rating = rating;
   }
 
