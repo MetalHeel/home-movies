@@ -45,7 +45,8 @@ class MovieList extends Component {
         <Edits onAdd={() => this.showAddForm()}
           onDelete={() => this.deleteSelection()}
           onUpdate={() => this.showEditForm()}
-          onSearch={(query) => this.searchList(query)} />
+          onSearch={(query) => this.searchList(query)}
+          onReset={() => this.loadAll()} />
         {editForm}
       </div>
     );
@@ -224,6 +225,17 @@ class MovieList extends Component {
     this.setState({
       movies: hits,
       editMode: this.state.editMode,
+      currentSelection: null
+    });
+  }
+
+  loadAll() {
+    var storedMovies = this.storage.getMovies();
+    storedMovies = this.sortList(storedMovies);
+
+    this.setState({
+      movies: storedMovies,
+      editMode: false,
       currentSelection: null
     });
   }

@@ -20,7 +20,8 @@ export class Edits extends Component {
         <button className="Update" onClick={() => this.props.onUpdate()}>Update</button>
         <div className="SearchBar">
           <input type="text" onChange={this.handleSearchChange} />
-          <button onClick={() => this.props.onSearch(this.state.searchQuery)}>Search</button>
+          <button className="Search" onClick={() => this.props.onSearch(this.state.searchQuery)}>Search</button>
+          <button className="Reset" onClick={() => this.props.onReset()}>Reset</button>
         </div>
       </div>
     );
