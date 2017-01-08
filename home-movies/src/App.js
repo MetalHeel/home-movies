@@ -129,7 +129,6 @@ class App extends Component {
     });
   }
 
-  // Todo: This will need to be expanded for artists.
   searchList(query) {
     var _ = require('lodash');
 
