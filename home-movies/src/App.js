@@ -137,7 +137,14 @@ class App extends Component {
 
     var hits = _.filter(this.state.allMovies, function(movie) {
       return _.some(movie, function(value) {
-        if(value.toUpperCase().indexOf(generalQuery) !== -1)
+        if(value.constructor === Array)
+        {
+          return _.some(value, function(actor) {
+            if(actor.toUpperCase().indexOf(generalQuery) !== -1)
+              return true;
+          })
+        }
+        else if(value.toUpperCase().indexOf(generalQuery) !== -1)
           return true;
 
         return false;
