@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
 
 
+// Todo: Add actors.
 export class View extends Component {
 	render() {
 		var title = "";
 		var genre = "";
 		var year = 1900;
 		var rating = 0;
+		var actors = [];
 
 		if(this.props.movie !== null)
 		{
@@ -25,7 +27,16 @@ export class View extends Component {
 					<li>Year: {year}</li>
 					<li>Rating: {rating}</li>
 				</ul>
+				<div>Actors</div>
+				<ul>{this.renderActors(actors)}</ul>
 			</div>
 		);
+	}
+	
+	// Todo: Alphabatize actors.
+	renderActors(actors) {
+	    return this.props.movie.actors.map(function(actor, index) {
+	    	return <li key={index}>{actor}</li>;
+	    });
 	}
 }

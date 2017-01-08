@@ -3,7 +3,6 @@ import './App.css';
 
 
 // Todo: Add actors.
-// Todo: Add some sort of "view" functionality.
 // Todo: Update any searches you've done with additions and deletions and whatnot.
 export class MovieList extends Component {
   render() {

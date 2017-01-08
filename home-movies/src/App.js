@@ -43,15 +43,12 @@ class App extends Component {
     {
       editForm = <EditForm
         initialEntries={this.state.currentSelection}
-        onSubmit={(title, genre, year, rating) => this.submitForm(title, genre, year, rating)}
+        onSubmit={(title, genre, year, rating, actors) => this.submitForm(title, genre, year, rating, actors)}
         onCancel={() => this.cancelEdit()} />;
     }
 
     if(this.state.mode === this.Modes.VIEW)
-    {
-      alert(this.state.currentSelection.title);
       viewForm = <View movie={this.state.currentSelection}/>
-    }
 
     return (
       <div>
@@ -98,11 +95,11 @@ class App extends Component {
     });
   }
 
-  submitForm(title, genre, year, rating) {
+  submitForm(title, genre, year, rating, actors) {
     if(this.state.currentSelection === null)
-      this.addNewMovie(title, genre, year, rating);
+      this.addNewMovie(title, genre, year, rating, actors);
     else
-      this.updateMovie(title, genre, year, rating);
+      this.updateMovie(title, genre, year, rating, actors);
   }
 
   deleteSelection() {
@@ -167,12 +164,13 @@ class App extends Component {
     });
   }
 
-  addNewMovie(title, genre, year, rating) {
+  addNewMovie(title, genre, year, rating, actors) {
     var newMovie = {
       "title": title,
       "genre": genre,
       "year": year,
-      "rating": rating
+      "rating": rating,
+      "actors": actors
     };
 
     var newMovies = this.state.allMovies.slice();
@@ -189,7 +187,7 @@ class App extends Component {
     this.storage.addMovie(newMovie);
   }
 
-  updateMovie(title, genre, year, rating) {
+  updateMovie(title, genre, year, rating, actors) {
     var _ = require('lodash');
 
     const selection = this.state.currentSelection;
@@ -199,7 +197,8 @@ class App extends Component {
       "title": title,
       "genre": genre,
       "year": year,
-      "rating": rating
+      "rating": rating,
+      "actors": actors
     };
 
     var newMovies = _.filter(this.state.allMovies, function(movie) { return selection === null || selection.title.localeCompare(movie.title) !== 0 });
